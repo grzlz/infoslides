@@ -25,7 +25,17 @@ The engine is currently configured to generate daily "Learn Go" programming cont
 
 ### Architecture Flow
 
-See the complete system flow in [docs/sequence-diagram.mmd](./docs/sequence-diagram.mmd) - a comprehensive sequence diagram showing the AI content generation → slide building → video compositing → Instagram Reels export pipeline.
+**View the Architecture:**
+- **Mermaid Source**: [docs/sequence-diagram.mmd](./docs/sequence-diagram.mmd) - Raw Mermaid diagram (view on GitHub or in compatible editors)
+- **Interactive HTML**: [docs/sequence-diagram.html](./docs/sequence-diagram.html) - Open in browser for rendered view
+- **Generate PDF**: Open the HTML file in a browser and use Print → Save as PDF
+
+The comprehensive sequence diagram shows the complete flow: AI content generation → slide building → video compositing → Instagram Reels export pipeline.
+
+To regenerate the diagram HTML:
+```sh
+npm run docs:diagram
+```
 
 ## Overview
 

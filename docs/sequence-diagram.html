@@ -1,0 +1,293 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI Go Instagram Pipeline - Sequence Diagram</title>
+    <script type="module">
+        import mermaid from 'https://cdn.jsdelivr.net/npm/mermaid@11/dist/mermaid.esm.min.mjs';
+        mermaid.initialize({
+            startOnLoad: true,
+            theme: 'default',
+            sequence: {
+                diagramMarginX: 50,
+                diagramMarginY: 10,
+                actorMargin: 50,
+                width: 150,
+                height: 65,
+                boxMargin: 10,
+                boxTextMargin: 5,
+                noteMargin: 10,
+                messageMargin: 35
+            }
+        });
+    </script>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            padding: 40px;
+            background: #f5f5f5;
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+        .container {
+            background: white;
+            padding: 40px;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        h1 {
+            color: #333;
+            margin-bottom: 10px;
+        }
+        .subtitle {
+            color: #666;
+            margin-bottom: 30px;
+        }
+        .print-note {
+            background: #fffbea;
+            border-left: 4px solid #f59e0b;
+            padding: 15px;
+            margin-bottom: 30px;
+            border-radius: 4px;
+        }
+        @media print {
+            body {
+                background: white;
+                padding: 0;
+            }
+            .container {
+                box-shadow: none;
+                padding: 20px;
+            }
+            .print-note {
+                display: none;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>AI-Powered Instagram Reels Pipeline</h1>
+        <p class="subtitle">Learn Go Education Content - Sequence Diagram</p>
+
+        <div class="print-note">
+            <strong>💡 To save as PDF:</strong> Press Ctrl+P (or Cmd+P on Mac) and select "Save as PDF" as the destination.
+        </div>
+
+        <div class="mermaid">
+sequenceDiagram
+    participant Scheduler as Daily Scheduler/CLI
+    participant Pipeline as ContentPipeline
+    participant TopicGen as TopicGenerator
+    participant AI as AI Service (GPT/Claude)
+    participant Builder as DialogueSlideBuilder
+    participant Director as SlideDirector
+    participant Registry as TenantRegistry
+    participant Strategy as InstagramStyleStrategy
+    participant Renderer as DialogueSlideRenderer
+    participant Canvas as Browser Canvas
+    participant VideoMgr as VideoManager
+    participant Compositor as VideoCompositor
+    participant Exporter as VideoExporter
+    participant Storage as File System
+
+    Note over Scheduler,Storage: AI-Powered Instagram Video Content Generation Pipeline
+
+    %% Daily Content Generation Flow
+    Scheduler->>Pipeline: trigger(date, topic?)
+    activate Pipeline
+
+    Pipeline->>TopicGen: getNextTopic(date)
+    activate TopicGen
+    TopicGen-->>Pipeline: topic { category, difficulty, keywords }
+    deactivate TopicGen
+
+    Pipeline->>AI: generateDialogue(topic)
+    activate AI
+    Note over AI: Generates novice-expert<br/>Go programming conversation
+    AI-->>Pipeline: dialogue { noviceMessages[], expertMessages[], codeSnippets[] }
+    deactivate AI
+
+    %% Slide Construction Phase
+    Pipeline->>Registry: getTenant('go-education')
+    activate Registry
+    Registry-->>Pipeline: tenant config { style, layout, branding }
+    deactivate Registry
+
+    Pipeline->>Director: buildDialogueSlide(dialogue, tenant)
+    activate Director
+
+    Director->>Builder: new DialogueSlideBuilder(tenant)
+    activate Builder
+
+    Director->>Builder: setTitle(topic.title)
+    Builder-->>Director: this
+
+    Director->>Builder: addSpeaker('novice', avatarUrl, color)
+    Builder-->>Director: this
+
+    Director->>Builder: addSpeaker('expert', avatarUrl, color)
+    Builder-->>Director: this
+
+    loop For each dialogue exchange
+        Director->>Builder: addMessage(speaker, text, timestamp)
+        Builder-->>Director: this
+    end
+
+    opt If code snippet exists
+        Director->>Builder: addCodeBlock(language, code, highlight)
+        Builder-->>Director: this
+    end
+
+    Director->>Strategy: getStyles(tenant)
+    activate Strategy
+    Strategy-->>Director: styles { colors, fonts, layout, instagramFormat }
+    deactivate Strategy
+
+    Director->>Builder: setStyle(styles)
+    Builder-->>Director: this
+
+    Director->>Builder: setMetadata({ hashtags, postTime, topic })
+    Builder-->>Director: this
+
+    Director->>Builder: validate()
+    Builder-->>Director: validation { isValid, warnings }
+
+    Director->>Builder: getResult()
+    Builder-->>Director: Slide object
+    deactivate Builder
+
+    Director-->>Pipeline: Slide object
+    deactivate Director
+
+    %% Rendering Phase
+    Pipeline->>Renderer: renderSlide(slide, format)
+    activate Renderer
+
+    Renderer->>Canvas: mount DialogueSlide component
+    activate Canvas
+
+    Canvas->>Canvas: Apply Instagram dimensions<br/>(1080x1080 or 1080x1350)
+    Canvas->>Canvas: Render dialogue bubbles
+    Canvas->>Canvas: Apply syntax highlighting
+    Canvas->>Canvas: Add speaker avatars
+    Canvas->>Canvas: Apply brand styling
+
+    Canvas-->>Renderer: HTML element
+    deactivate Canvas
+
+    Renderer-->>Pipeline: rendered element
+    deactivate Renderer
+
+    %% Video Background Selection
+    Pipeline->>VideoMgr: selectBackgroundVideo(duration, theme)
+    activate VideoMgr
+
+    Note over VideoMgr: Selects from Minecraft<br/>parkour footage library
+
+    VideoMgr->>VideoMgr: Choose random segment<br/>(avoid repetition)
+    VideoMgr->>Storage: fetch video clip
+    activate Storage
+    Storage-->>VideoMgr: video file path
+    deactivate Storage
+
+    VideoMgr-->>Pipeline: background video { path, duration, resolution }
+    deactivate VideoMgr
+
+    %% Video Compositing Phase
+    Pipeline->>Compositor: compositeVideoContent(slide, backgroundVideo)
+    activate Compositor
+
+    Note over Compositor: Uses FFmpeg for video processing
+
+    Compositor->>Canvas: render slide frames (transparent bg)
+    activate Canvas
+    Canvas-->>Compositor: frame sequence
+    deactivate Canvas
+
+    Compositor->>Compositor: Overlay slide content on video<br/>(center with padding/margins)
+    Compositor->>Compositor: Add animations<br/>(dialogue fade-in, code typing effect)
+    Compositor->>Compositor: Adjust video duration<br/>to match dialogue length
+
+    opt Add Audio
+        Compositor->>AI: generateVoiceover(dialogue)
+        activate AI
+        AI-->>Compositor: audio { noviceVoice.mp3, expertVoice.mp3 }
+        deactivate AI
+        Compositor->>Compositor: Mix voices with background music
+    end
+
+    Compositor-->>Pipeline: composited video frames
+    deactivate Compositor
+
+    %% Export Phase
+    Pipeline->>Exporter: exportToVideo(frames, options)
+    activate Exporter
+
+    Note over Exporter: Renders final MP4
+
+    Exporter->>Exporter: Encode video (H.264)<br/>Instagram specs:<br/>- Resolution: 1080x1350<br/>- FPS: 30<br/>- Bitrate: 5000kbps
+
+    Exporter->>Exporter: optimize for Instagram<br/>(compression, color grading)
+
+    Exporter->>Storage: save(filename, video, metadata)
+    activate Storage
+    Storage-->>Exporter: file path
+    deactivate Storage
+
+    Exporter-->>Pipeline: exported file { path, duration, size }
+    deactivate Exporter
+
+    %% Optional: Generate Caption
+    Pipeline->>AI: generateCaption(slide, topic)
+    activate AI
+    AI-->>Pipeline: caption { text, hashtags, emojis }
+    deactivate AI
+
+    Pipeline->>Storage: saveCaption(filename, caption)
+    activate Storage
+    Storage-->>Pipeline: caption saved
+    deactivate Storage
+
+    Pipeline-->>Scheduler: success { videoPath, captionPath, metadata }
+    deactivate Pipeline
+
+    Note over Scheduler,Storage: Ready for Instagram Reels posting!
+
+    %% Optional Manual Review Flow
+    opt Manual Review Mode
+        Scheduler->>Scheduler: await user approval
+        alt Approved
+            Scheduler->>Storage: move to ready/ folder
+        else Rejected
+            Scheduler->>Storage: move to rejected/ folder
+            Scheduler->>Pipeline: regenerate(feedback)
+        end
+    end
+
+    %% Error Handling Flow
+    Note over Pipeline,AI: Error Handling Paths
+
+    alt AI Service Error
+        AI-->>Pipeline: error (rate limit/API down)
+        Pipeline->>Pipeline: retry with exponential backoff
+        Pipeline->>Storage: log error + queue for later
+    end
+
+    alt Validation Failure
+        Builder-->>Director: validation { isValid: false, errors }
+        Director->>Pipeline: BuilderValidationError
+        Pipeline->>AI: regenerate with constraints
+    end
+
+    alt Export Failure
+        Exporter-->>Pipeline: ExportError
+        Pipeline->>Renderer: retry with fallback format
+        Pipeline->>Storage: log error
+    end
+
+        </div>
+    </div>
+</body>
+</html>
