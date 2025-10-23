@@ -2,19 +2,40 @@
 
 An AI-powered content generation pipeline for creating daily educational programming content. Built on SvelteKit with Svelte 5's modern runes syntax, implementing design patterns for extensible slide creation and automated social media content generation.
 
-## Current Project: Learn Go Instagram Pipeline
+## Current Project: Learn Go Instagram Reels Pipeline
 
-The engine is currently configured to generate daily "Learn Go" programming content in a novice-expert dialogue format, optimized for Instagram posting. The AI-powered pipeline automatically:
+The engine is currently configured to generate daily "Learn Go" programming content in a novice-expert dialogue format, optimized for Instagram Reels. The AI-powered pipeline automatically:
 
 - **Generates educational conversations** between a novice learner and Go expert
 - **Creates visual slides** with syntax-highlighted code examples
-- **Exports Instagram-ready images** (1080x1080 or 1080x1350)
+- **Composites over Minecraft parkour footage** for engaging background (brain-rot style)
+- **Exports Instagram-ready videos** (MP4, 1080x1350, 30fps)
+- **Optional AI voiceover** with distinct novice/expert voices
 - **Produces engaging captions** with relevant hashtags
 - **Schedules daily content** for consistent posting
 
+### Video Format Features
+
+- **Background B-Roll**: Minecraft parkour/speedrun footage to maintain viewer attention
+- **Overlay Design**: Dialogue bubbles and code snippets centered over gameplay
+- **Smart Segmentation**: Random video clips from library (avoids repetition)
+- **Animations**: Fade-in dialogue, typing effect for code, smooth transitions
+- **Audio Layers**: Optional AI voiceover + background music mix
+- **Instagram Optimized**: Perfect specs for Reels (H.264, 5000kbps, 30fps)
+
 ### Architecture Flow
 
-See the complete system flow in [docs/sequence-diagram.mmd](./docs/sequence-diagram.mmd) - a comprehensive sequence diagram showing the AI content generation → slide building → rendering → Instagram export pipeline.
+**View the Architecture:**
+- **Mermaid Source**: [docs/sequence-diagram.mmd](./docs/sequence-diagram.mmd) - Raw Mermaid diagram (view on GitHub or in compatible editors)
+- **Interactive HTML**: [docs/sequence-diagram.html](./docs/sequence-diagram.html) - Open in browser for rendered view
+- **Generate PDF**: Open the HTML file in a browser and use Print → Save as PDF
+
+The comprehensive sequence diagram shows the complete flow: AI content generation → slide building → video compositing → Instagram Reels export pipeline.
+
+To regenerate the diagram HTML:
+```sh
+npm run docs:diagram
+```
 
 ## Overview
 
@@ -120,27 +141,44 @@ class HIPAASlideBuilder extends SlideBuilder {
 - **TopicGenerator**: Schedules progressive Go programming topics
 - **AI Service Integration**: Generates novice-expert dialogues using GPT/Claude
 - **Content Validation**: Ensures educational quality and code accuracy
+- **Voiceover Generation**: Optional AI text-to-speech for dialogue (distinct voices)
 
 ### Slide Construction
 - **DialogueSlideBuilder**: Formats conversations with speaker avatars and threading
-- **InstagramStyleStrategy**: Applies Instagram-optimized styling (dimensions, contrast, readability)
+- **InstagramStyleStrategy**: Applies Instagram Reels-optimized styling (dimensions, contrast, readability)
 - **Code Highlighting**: Syntax highlighting for Go code snippets
 
+### Video Processing
+- **VideoManager**: Manages Minecraft parkour footage library, selects random clips
+- **VideoCompositor**: FFmpeg-based overlay compositing (dialogue on gameplay)
+- **Animation Engine**: Fade-in effects, code typing animations, smooth transitions
+- **Audio Mixer**: Combines voiceovers with background music
+
 ### Export & Delivery
-- **ImageExporter**: High-quality PNG/JPG export using html-to-image
+- **VideoExporter**: High-quality MP4 export (H.264, Instagram Reels specs)
 - **Caption Generator**: AI-powered captions with hashtags
 - **Batch Processing**: Daily automated generation with error handling
+- **Thumbnail Generator**: Static frame extraction for video preview
 
 ## Usage Example
 
 ### Educational Content Pipeline
 
 ```javascript
-// Generate daily "Learn Go" Instagram content
+// Generate daily "Learn Go" Instagram Reels content
 const pipeline = new ContentPipeline({
   tenantId: 'go-education',
   aiService: 'openai', // or 'claude', 'local'
-  format: { width: 1080, height: 1080 }
+  format: {
+    width: 1080,
+    height: 1350,
+    fps: 30
+  },
+  video: {
+    backgroundType: 'minecraft-parkour',
+    enableVoiceover: true,
+    backgroundMusic: true
+  }
 });
 
 // Generate today's content
@@ -153,9 +191,10 @@ const result = await pipeline.generateDailyContent({
 // Output:
 // {
 //   slide: Slide { dialogue, code, speakers },
-//   image: './output/2025-10-23-goroutines.png',
+//   video: './output/2025-10-23-goroutines.mp4',
+//   thumbnail: './output/2025-10-23-goroutines.jpg',
 //   caption: 'Learn Go goroutines! 🚀 #golang #programming...',
-//   metadata: { topic, difficulty, hashtags }
+//   metadata: { topic, difficulty, hashtags, duration: '45s' }
 // }
 ```
 
@@ -178,20 +217,29 @@ const slide = slideEngine.generateSlide({
 
 ## CLI Usage
 
-Generate Instagram content from the command line:
+Generate Instagram Reels content from the command line:
 
 ```sh
-# Generate today's content
+# Generate today's content (with video)
 node scripts/generate-daily.js
 
 # Generate with specific topic
 node scripts/generate-daily.js --topic goroutines-basics
 
+# Disable voiceover (text only)
+node scripts/generate-daily.js --no-audio
+
+# Use different background theme
+node scripts/generate-daily.js --background minecraft-speedrun
+
 # Batch generate week's content
 node scripts/generate-daily.js --batch 7
 
-# Preview mode (no export)
+# Preview mode (no export, show in browser)
 node scripts/generate-daily.js --preview
+
+# Export static image instead of video
+node scripts/generate-daily.js --format image
 ```
 
 ## Benefits
@@ -213,10 +261,12 @@ node scripts/generate-daily.js --preview
 
 - **SvelteKit 5** with modern runes syntax for reactive state management
 - **Pure JavaScript** (no TypeScript - prioritizes simplicity)
-- **AI Integration** - OpenAI GPT / Anthropic Claude for content generation
-- **Tailwind CSS v4** for utility-first styling and Instagram-optimized design
-- **html-to-image** library for high-quality PNG/JPG export
+- **AI Integration** - OpenAI GPT / Anthropic Claude for content generation & voiceover
+- **FFmpeg** for video compositing, encoding, and audio mixing
+- **Tailwind CSS v4** for utility-first styling and Instagram Reels-optimized design
+- **html-to-image** library for thumbnail generation and fallback image export
 - **Prism.js** for Go syntax highlighting
+- **Remotion** (optional) for programmatic video rendering with React-like components
 - **Vitest + Playwright** for comprehensive testing
 
 ## Developing
