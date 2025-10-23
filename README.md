@@ -1,10 +1,24 @@
 # Infography Factory Engine
 
-A multi-tenant slide generation system built on SvelteKit with Svelte 5's modern runes syntax, implementing design patterns for extensible infographic creation.
+An AI-powered content generation pipeline for creating daily educational programming content. Built on SvelteKit with Svelte 5's modern runes syntax, implementing design patterns for extensible slide creation and automated social media content generation.
+
+## Current Project: Learn Go Instagram Pipeline
+
+The engine is currently configured to generate daily "Learn Go" programming content in a novice-expert dialogue format, optimized for Instagram posting. The AI-powered pipeline automatically:
+
+- **Generates educational conversations** between a novice learner and Go expert
+- **Creates visual slides** with syntax-highlighted code examples
+- **Exports Instagram-ready images** (1080x1080 or 1080x1350)
+- **Produces engaging captions** with relevant hashtags
+- **Schedules daily content** for consistent posting
+
+### Architecture Flow
+
+See the complete system flow in [docs/sequence-diagram.mmd](./docs/sequence-diagram.mmd) - a comprehensive sequence diagram showing the AI content generation → slide building → rendering → Instagram export pipeline.
 
 ## Overview
 
-The Infography Factory Engine separates slide construction logic from presentation concerns, enabling multiple organizations to define custom slide styles, layouts, and content types while sharing the underlying construction infrastructure. Using pure JavaScript instead of TypeScript, the system prioritizes simplicity and accessibility while maintaining robust architecture through well-defined design patterns and clear separation of concerns.
+The Infography Factory Engine separates slide construction logic from presentation concerns, enabling different content types (educational dialogues, charts, infographics) while sharing the underlying construction infrastructure. Using pure JavaScript instead of TypeScript, the system prioritizes simplicity and accessibility while maintaining robust architecture through well-defined design patterns and clear separation of concerns.
 
 ## Architecture Patterns
 
@@ -100,10 +114,55 @@ class HIPAASlideBuilder extends SlideBuilder {
 }
 ```
 
+## Pipeline Components
+
+### AI Content Generation
+- **TopicGenerator**: Schedules progressive Go programming topics
+- **AI Service Integration**: Generates novice-expert dialogues using GPT/Claude
+- **Content Validation**: Ensures educational quality and code accuracy
+
+### Slide Construction
+- **DialogueSlideBuilder**: Formats conversations with speaker avatars and threading
+- **InstagramStyleStrategy**: Applies Instagram-optimized styling (dimensions, contrast, readability)
+- **Code Highlighting**: Syntax highlighting for Go code snippets
+
+### Export & Delivery
+- **ImageExporter**: High-quality PNG/JPG export using html-to-image
+- **Caption Generator**: AI-powered captions with hashtags
+- **Batch Processing**: Daily automated generation with error handling
+
 ## Usage Example
 
+### Educational Content Pipeline
+
 ```javascript
-// Generate a slide for tenant "acme-corp"
+// Generate daily "Learn Go" Instagram content
+const pipeline = new ContentPipeline({
+  tenantId: 'go-education',
+  aiService: 'openai', // or 'claude', 'local'
+  format: { width: 1080, height: 1080 }
+});
+
+// Generate today's content
+const result = await pipeline.generateDailyContent({
+  date: new Date(),
+  topic: 'goroutines-basics', // or auto-generate
+  reviewMode: true // manual approval before export
+});
+
+// Output:
+// {
+//   slide: Slide { dialogue, code, speakers },
+//   image: './output/2025-10-23-goroutines.png',
+//   caption: 'Learn Go goroutines! 🚀 #golang #programming...',
+//   metadata: { topic, difficulty, hashtags }
+// }
+```
+
+### Traditional Slide Generation
+
+```javascript
+// Generate a slide for other use cases
 const slideEngine = new SlideEngine();
 
 const slide = slideEngine.generateSlide({
@@ -115,16 +174,38 @@ const slide = slideEngine.generateSlide({
     layoutType: 'single-column'
   }
 });
+```
 
-// The slide is automatically styled with ACME's brand colors,
-// uses their preferred layout, and includes their watermark
+## CLI Usage
+
+Generate Instagram content from the command line:
+
+```sh
+# Generate today's content
+node scripts/generate-daily.js
+
+# Generate with specific topic
+node scripts/generate-daily.js --topic goroutines-basics
+
+# Batch generate week's content
+node scripts/generate-daily.js --batch 7
+
+# Preview mode (no export)
+node scripts/generate-daily.js --preview
 ```
 
 ## Benefits
 
+### For Content Creators
+1. **Automated Content**: Daily educational posts with zero manual work
+2. **Consistent Quality**: AI ensures engaging novice-expert dialogues
+3. **Code Accuracy**: Validated Go syntax and best practices
+4. **Instagram Optimized**: Perfect dimensions, contrast, and readability
+
+### For Developers
 1. **Extensibility**: New slide types = new builders. New styling = new strategies.
-2. **Tenant Isolation**: Each tenant can have completely different builders/strategies
-3. **Consistency**: Director ensures all slides follow construction rules
+2. **Multi-Tenant**: Support multiple content brands/styles simultaneously
+3. **Consistency**: Director pattern ensures all slides follow construction rules
 4. **Maintainability**: Changes to one tenant don't affect others
 5. **Testability**: Each pattern component can be unit tested independently
 
@@ -132,8 +213,10 @@ const slide = slideEngine.generateSlide({
 
 - **SvelteKit 5** with modern runes syntax for reactive state management
 - **Pure JavaScript** (no TypeScript - prioritizes simplicity)
-- **Tailwind CSS v4** for utility-first styling and tenant-specific design systems
-- **html-to-image** library for high-quality slide export functionality
+- **AI Integration** - OpenAI GPT / Anthropic Claude for content generation
+- **Tailwind CSS v4** for utility-first styling and Instagram-optimized design
+- **html-to-image** library for high-quality PNG/JPG export
+- **Prism.js** for Go syntax highlighting
 - **Vitest + Playwright** for comprehensive testing
 
 ## Developing

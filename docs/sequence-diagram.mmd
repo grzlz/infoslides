@@ -1,0 +1,170 @@
+sequenceDiagram
+    participant Scheduler as Daily Scheduler/CLI
+    participant Pipeline as ContentPipeline
+    participant TopicGen as TopicGenerator
+    participant AI as AI Service (GPT/Claude)
+    participant Builder as DialogueSlideBuilder
+    participant Director as SlideDirector
+    participant Registry as TenantRegistry
+    participant Strategy as InstagramStyleStrategy
+    participant Renderer as DialogueSlideRenderer
+    participant Canvas as Browser Canvas
+    participant Exporter as ImageExporter
+    participant Storage as File System
+
+    Note over Scheduler,Storage: AI-Powered Instagram Content Generation Pipeline
+
+    %% Daily Content Generation Flow
+    Scheduler->>Pipeline: trigger(date, topic?)
+    activate Pipeline
+
+    Pipeline->>TopicGen: getNextTopic(date)
+    activate TopicGen
+    TopicGen-->>Pipeline: topic { category, difficulty, keywords }
+    deactivate TopicGen
+
+    Pipeline->>AI: generateDialogue(topic)
+    activate AI
+    Note over AI: Generates novice-expert<br/>Go programming conversation
+    AI-->>Pipeline: dialogue { noviceMessages[], expertMessages[], codeSnippets[] }
+    deactivate AI
+
+    %% Slide Construction Phase
+    Pipeline->>Registry: getTenant('go-education')
+    activate Registry
+    Registry-->>Pipeline: tenant config { style, layout, branding }
+    deactivate Registry
+
+    Pipeline->>Director: buildDialogueSlide(dialogue, tenant)
+    activate Director
+
+    Director->>Builder: new DialogueSlideBuilder(tenant)
+    activate Builder
+
+    Director->>Builder: setTitle(topic.title)
+    Builder-->>Director: this
+
+    Director->>Builder: addSpeaker('novice', avatarUrl, color)
+    Builder-->>Director: this
+
+    Director->>Builder: addSpeaker('expert', avatarUrl, color)
+    Builder-->>Director: this
+
+    loop For each dialogue exchange
+        Director->>Builder: addMessage(speaker, text, timestamp)
+        Builder-->>Director: this
+    end
+
+    opt If code snippet exists
+        Director->>Builder: addCodeBlock(language, code, highlight)
+        Builder-->>Director: this
+    end
+
+    Director->>Strategy: getStyles(tenant)
+    activate Strategy
+    Strategy-->>Director: styles { colors, fonts, layout, instagramFormat }
+    deactivate Strategy
+
+    Director->>Builder: setStyle(styles)
+    Builder-->>Director: this
+
+    Director->>Builder: setMetadata({ hashtags, postTime, topic })
+    Builder-->>Director: this
+
+    Director->>Builder: validate()
+    Builder-->>Director: validation { isValid, warnings }
+
+    Director->>Builder: getResult()
+    Builder-->>Director: Slide object
+    deactivate Builder
+
+    Director-->>Pipeline: Slide object
+    deactivate Director
+
+    %% Rendering Phase
+    Pipeline->>Renderer: renderSlide(slide, format)
+    activate Renderer
+
+    Renderer->>Canvas: mount DialogueSlide component
+    activate Canvas
+
+    Canvas->>Canvas: Apply Instagram dimensions<br/>(1080x1080 or 1080x1350)
+    Canvas->>Canvas: Render dialogue bubbles
+    Canvas->>Canvas: Apply syntax highlighting
+    Canvas->>Canvas: Add speaker avatars
+    Canvas->>Canvas: Apply brand styling
+
+    Canvas-->>Renderer: HTML element
+    deactivate Canvas
+
+    Renderer-->>Pipeline: rendered element
+    deactivate Renderer
+
+    %% Export Phase
+    Pipeline->>Exporter: exportToImage(element, options)
+    activate Exporter
+
+    Note over Exporter: Uses html-to-image library
+
+    Exporter->>Canvas: screenshot(element, quality: high)
+    activate Canvas
+    Canvas-->>Exporter: PNG/JPG blob
+    deactivate Canvas
+
+    Exporter->>Exporter: optimize for Instagram<br/>(compression, dimensions)
+
+    Exporter->>Storage: save(filename, blob, metadata)
+    activate Storage
+    Storage-->>Exporter: file path
+    deactivate Storage
+
+    Exporter-->>Pipeline: exported file { path, dimensions, size }
+    deactivate Exporter
+
+    %% Optional: Generate Caption
+    Pipeline->>AI: generateCaption(slide, topic)
+    activate AI
+    AI-->>Pipeline: caption { text, hashtags, emojis }
+    deactivate AI
+
+    Pipeline->>Storage: saveCaption(filename, caption)
+    activate Storage
+    Storage-->>Pipeline: caption saved
+    deactivate Storage
+
+    Pipeline-->>Scheduler: success { imagePath, captionPath, metadata }
+    deactivate Pipeline
+
+    Note over Scheduler,Storage: Ready for Instagram posting!
+
+    %% Optional Manual Review Flow
+    opt Manual Review Mode
+        Scheduler->>Scheduler: await user approval
+        alt Approved
+            Scheduler->>Storage: move to ready/ folder
+        else Rejected
+            Scheduler->>Storage: move to rejected/ folder
+            Scheduler->>Pipeline: regenerate(feedback)
+        end
+    end
+
+    %% Error Handling Flow
+    Note over Pipeline,AI: Error Handling Paths
+
+    alt AI Service Error
+        AI-->>Pipeline: error (rate limit/API down)
+        Pipeline->>Pipeline: retry with exponential backoff
+        Pipeline->>Storage: log error + queue for later
+    end
+
+    alt Validation Failure
+        Builder-->>Director: validation { isValid: false, errors }
+        Director->>Pipeline: BuilderValidationError
+        Pipeline->>AI: regenerate with constraints
+    end
+
+    alt Export Failure
+        Exporter-->>Pipeline: ExportError
+        Pipeline->>Renderer: retry with fallback format
+        Pipeline->>Storage: log error
+    end
