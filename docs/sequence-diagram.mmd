@@ -9,10 +9,12 @@ sequenceDiagram
     participant Strategy as InstagramStyleStrategy
     participant Renderer as DialogueSlideRenderer
     participant Canvas as Browser Canvas
-    participant Exporter as ImageExporter
+    participant VideoMgr as VideoManager
+    participant Compositor as VideoCompositor
+    participant Exporter as VideoExporter
     participant Storage as File System
 
-    Note over Scheduler,Storage: AI-Powered Instagram Content Generation Pipeline
+    Note over Scheduler,Storage: AI-Powered Instagram Video Content Generation Pipeline
 
     %% Daily Content Generation Flow
     Scheduler->>Pipeline: trigger(date, topic?)
@@ -100,25 +102,63 @@ sequenceDiagram
     Renderer-->>Pipeline: rendered element
     deactivate Renderer
 
-    %% Export Phase
-    Pipeline->>Exporter: exportToImage(element, options)
-    activate Exporter
+    %% Video Background Selection
+    Pipeline->>VideoMgr: selectBackgroundVideo(duration, theme)
+    activate VideoMgr
 
-    Note over Exporter: Uses html-to-image library
+    Note over VideoMgr: Selects from Minecraft<br/>parkour footage library
 
-    Exporter->>Canvas: screenshot(element, quality: high)
+    VideoMgr->>VideoMgr: Choose random segment<br/>(avoid repetition)
+    VideoMgr->>Storage: fetch video clip
+    activate Storage
+    Storage-->>VideoMgr: video file path
+    deactivate Storage
+
+    VideoMgr-->>Pipeline: background video { path, duration, resolution }
+    deactivate VideoMgr
+
+    %% Video Compositing Phase
+    Pipeline->>Compositor: compositeVideoContent(slide, backgroundVideo)
+    activate Compositor
+
+    Note over Compositor: Uses FFmpeg for video processing
+
+    Compositor->>Canvas: render slide frames (transparent bg)
     activate Canvas
-    Canvas-->>Exporter: PNG/JPG blob
+    Canvas-->>Compositor: frame sequence
     deactivate Canvas
 
-    Exporter->>Exporter: optimize for Instagram<br/>(compression, dimensions)
+    Compositor->>Compositor: Overlay slide content on video<br/>(center with padding/margins)
+    Compositor->>Compositor: Add animations<br/>(dialogue fade-in, code typing effect)
+    Compositor->>Compositor: Adjust video duration<br/>to match dialogue length
 
-    Exporter->>Storage: save(filename, blob, metadata)
+    opt Add Audio
+        Compositor->>AI: generateVoiceover(dialogue)
+        activate AI
+        AI-->>Compositor: audio { noviceVoice.mp3, expertVoice.mp3 }
+        deactivate AI
+        Compositor->>Compositor: Mix voices with background music
+    end
+
+    Compositor-->>Pipeline: composited video frames
+    deactivate Compositor
+
+    %% Export Phase
+    Pipeline->>Exporter: exportToVideo(frames, options)
+    activate Exporter
+
+    Note over Exporter: Renders final MP4
+
+    Exporter->>Exporter: Encode video (H.264)<br/>Instagram specs:<br/>- Resolution: 1080x1350<br/>- FPS: 30<br/>- Bitrate: 5000kbps
+
+    Exporter->>Exporter: optimize for Instagram<br/>(compression, color grading)
+
+    Exporter->>Storage: save(filename, video, metadata)
     activate Storage
     Storage-->>Exporter: file path
     deactivate Storage
 
-    Exporter-->>Pipeline: exported file { path, dimensions, size }
+    Exporter-->>Pipeline: exported file { path, duration, size }
     deactivate Exporter
 
     %% Optional: Generate Caption
@@ -132,10 +172,10 @@ sequenceDiagram
     Storage-->>Pipeline: caption saved
     deactivate Storage
 
-    Pipeline-->>Scheduler: success { imagePath, captionPath, metadata }
+    Pipeline-->>Scheduler: success { videoPath, captionPath, metadata }
     deactivate Pipeline
 
-    Note over Scheduler,Storage: Ready for Instagram posting!
+    Note over Scheduler,Storage: Ready for Instagram Reels posting!
 
     %% Optional Manual Review Flow
     opt Manual Review Mode
