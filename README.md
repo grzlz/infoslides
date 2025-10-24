@@ -4,15 +4,21 @@ An AI-powered content generation pipeline for creating daily educational program
 
 ## Current Project: Learn Go Instagram Reels Pipeline
 
-The engine is currently configured to generate daily "Learn Go" programming content in a novice-expert dialogue format, optimized for Instagram Reels. The AI-powered pipeline automatically:
+The engine is currently configured to generate daily "Learn Go" programming content featuring **Kobe Bryant as the expert** and **Kanye West as the confused beginner**, optimized for Instagram Reels. The AI-powered pipeline automatically:
 
-- **Generates educational conversations** between a novice learner and Go expert
+- **Generates educational conversations** in celebrity dialogue format (see [Creative Brief](./docs/CREATIVE_BRIEF.md))
 - **Creates visual slides** with syntax-highlighted code examples
 - **Composites over Minecraft parkour footage** for engaging background (brain-rot style)
 - **Exports Instagram-ready videos** (MP4, 1080x1350, 30fps)
-- **Optional AI voiceover** with distinct novice/expert voices
+- **AI voiceover** with celebrity voice cloning (Kobe/Kanye)
 - **Produces engaging captions** with relevant hashtags
 - **Schedules daily content** for consistent posting
+
+### Creative Format
+
+**"What the fuck are you talking about, Kobe Bryant?"**
+
+Each video features Kobe delivering rapid-fire technical explanations, interrupted by Kanye's chaotic confusion, forcing a simplified answer. This creates comedy through contrast while maintaining educational value. See [docs/CREATIVE_BRIEF.md](./docs/CREATIVE_BRIEF.md) for full character profiles, scripts, and content strategy.
 
 ### Video Format Features
 
@@ -23,12 +29,15 @@ The engine is currently configured to generate daily "Learn Go" programming cont
 - **Audio Layers**: Optional AI voiceover + background music mix
 - **Instagram Optimized**: Perfect specs for Reels (H.264, 5000kbps, 30fps)
 
-### Architecture Flow
+### Architecture & Documentation
 
-**View the Architecture:**
-- **Mermaid Source**: [docs/sequence-diagram.mmd](./docs/sequence-diagram.mmd) - Raw Mermaid diagram (view on GitHub or in compatible editors)
-- **Interactive HTML**: [docs/sequence-diagram.html](./docs/sequence-diagram.html) - Open in browser for rendered view
-- **Generate PDF**: Open the HTML file in a browser and use Print → Save as PDF
+**Creative Direction:**
+- **Creative Brief**: [docs/CREATIVE_BRIEF.md](./docs/CREATIVE_BRIEF.md) - Character profiles, scripts, content strategy
+
+**Technical Architecture:**
+- **Sequence Diagram Source**: [docs/sequence-diagram.mmd](./docs/sequence-diagram.mmd) - Raw Mermaid diagram
+- **Interactive Viewer**: [docs/sequence-diagram.html](./docs/sequence-diagram.html) - Open in browser for rendered view
+- **Architecture Assessment**: [docs/ARCHITECTURE_ASSESSMENT.md](./docs/ARCHITECTURE_ASSESSMENT.md) - Implementation roadmap
 
 The comprehensive sequence diagram shows the complete flow: AI content generation → slide building → video compositing → Instagram Reels export pipeline.
 
