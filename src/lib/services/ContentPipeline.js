@@ -1,4 +1,5 @@
 import { AIService } from './AIService.js';
+import { VoiceService } from './VoiceService.js';
 import { DialogueSlideBuilder } from '../builders/DialogueSlideBuilder.js';
 import { Speaker } from '../models/dialogue/Speaker.js';
 import { Topic } from '../models/instagram/Topic.js';
@@ -28,9 +29,10 @@ export class ContentPipeline {
 	 * @param {Object} options - Generation options
 	 * @param {Topic|Object} options.topic - Topic to generate content for
 	 * @param {boolean} [options.reviewMode=false] - If true, returns slide without publishing
+	 * @param {boolean} [options.enableVoice=false] - If true, generates voice audio for dialogue
 	 * @returns {Promise<Object>} - Generated content with slide and metadata
 	 */
-	async generateDialogueContent({ topic, reviewMode = false }) {
+	async generateDialogueContent({ topic, reviewMode = false, enableVoice = false }) {
 		console.log(`[ContentPipeline] Generating dialogue for topic: ${topic.title}`);
 
 		// Ensure topic is a Topic instance
@@ -90,15 +92,33 @@ export class ContentPipeline {
 			throw new Error(`Invalid slide: ${slide.validation.errors.join(', ')}`);
 		}
 
-		// Step 7: Return result
+		// Step 7: Generate voice audio (optional)
+		let voiceResult = null;
+		if (enableVoice) {
+			console.log('[ContentPipeline] Voice generation enabled, generating audio...');
+			try {
+				const voiceService = VoiceService.fromEnv();
+				voiceResult = await voiceService.generateDialogueAudio(dialogueContent);
+				console.log(
+					`[ContentPipeline] ✓ Voice generation complete: ${voiceResult.summary.successful}/${voiceResult.summary.total} files`
+				);
+			} catch (error) {
+				console.error('[ContentPipeline] Voice generation failed:', error);
+				console.warn('[ContentPipeline] Continuing without voice audio');
+			}
+		}
+
+		// Step 8: Return result
 		const result = {
 			success: true,
 			slide: slide,
 			dialogue: dialogueContent,
 			topic: topicObj,
+			voice: voiceResult,
 			metadata: {
 				generatedAt: new Date().toISOString(),
 				reviewMode,
+				enableVoice,
 				duration: dialogueContent.duration,
 				messageCount: dialogueContent.messages.length,
 				speakerCount: dialogueContent.speakers.length,

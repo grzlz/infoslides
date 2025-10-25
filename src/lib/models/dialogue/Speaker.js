@@ -41,6 +41,17 @@ export class Speaker {
 			speakingStyle: '' // e.g., "Rapid-fire technical explanations"
 		};
 
+		/** @type {Object} Voice generation profile for TTS */
+		this.voiceProfile = {
+			provider: null, // 'openai' | 'elevenlabs' | 'google' | null (use default)
+			voiceId: null, // Provider-specific voice ID
+			model: null, // Provider-specific model (e.g., 'tts-1', 'eleven_monolingual_v1')
+			stability: 0.5, // ElevenLabs: 0-1 (higher = more stable)
+			similarity: 0.75, // ElevenLabs: 0-1 (higher = more similar to original)
+			style: 0.0, // ElevenLabs: 0-1 (style exaggeration)
+			speed: 1.0 // OpenAI: 0.25-4.0 (speech speed)
+		};
+
 		/** @type {Object} Metadata */
 		this.metadata = {
 			createdAt: new Date().toISOString(),
@@ -98,6 +109,7 @@ export class Speaker {
 		cloned.avatarUrl = this.avatarUrl;
 		cloned.style = JSON.parse(JSON.stringify(this.style));
 		cloned.personality = JSON.parse(JSON.stringify(this.personality));
+		cloned.voiceProfile = JSON.parse(JSON.stringify(this.voiceProfile));
 
 		return cloned;
 	}
@@ -114,6 +126,7 @@ export class Speaker {
 			avatarUrl: this.avatarUrl,
 			style: this.style,
 			personality: this.personality,
+			voiceProfile: this.voiceProfile,
 			metadata: this.metadata
 		};
 	}
@@ -132,6 +145,7 @@ export class Speaker {
 		speaker.avatarUrl = data.avatarUrl || null;
 		speaker.style = { ...speaker.style, ...data.style };
 		speaker.personality = { ...speaker.personality, ...data.personality };
+		speaker.voiceProfile = { ...speaker.voiceProfile, ...data.voiceProfile };
 		speaker.metadata = { ...speaker.metadata, ...data.metadata };
 
 		return speaker;
@@ -157,6 +171,15 @@ export class Speaker {
 			tone: 'serious',
 			speakingStyle: 'Rapid-fire technical explanations with discipline focus'
 		};
+		kobe.voiceProfile = {
+			provider: null, // Use default from environment
+			voiceId: 'onyx', // OpenAI: Deep, authoritative male voice
+			model: 'tts-1', // OpenAI: Fast model
+			stability: 0.7, // ElevenLabs: More stable for serious tone
+			similarity: 0.8, // ElevenLabs: High similarity
+			style: 0.0, // ElevenLabs: No style exaggeration
+			speed: 1.1 // OpenAI: Slightly faster for "rapid-fire" style
+		};
 		return kobe;
 	}
 
@@ -179,6 +202,15 @@ export class Speaker {
 			description: 'The Chaotic Learner',
 			tone: 'chaotic',
 			speakingStyle: 'Stream of consciousness interruptions and bold questions'
+		};
+		kanye.voiceProfile = {
+			provider: null, // Use default from environment
+			voiceId: 'fable', // OpenAI: Expressive, dynamic male voice
+			model: 'tts-1', // OpenAI: Fast model
+			stability: 0.3, // ElevenLabs: Less stable for chaotic personality
+			similarity: 0.7, // ElevenLabs: Good similarity
+			style: 0.5, // ElevenLabs: Some style exaggeration for expressiveness
+			speed: 0.95 // OpenAI: Slightly slower for emphasis
 		};
 		return kanye;
 	}
