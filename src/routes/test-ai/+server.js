@@ -1,3 +1,4 @@
+import 'dotenv/config';
 import { json } from '@sveltejs/kit';
 import { ContentPipeline } from '$lib/services/ContentPipeline.js';
 import { Topic } from '$lib/models/instagram/Topic.js';

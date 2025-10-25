@@ -1,0 +1,109 @@
+sequenceDiagram
+    participant Usuario
+    participant ContentPipeline as ContentPipeline<br/>(Orquestador)
+    participant AIService as AIService<br/>(Generación IA)
+    participant DialogueBuilder as DialogueSlideBuilder<br/>(Constructor)
+    participant Director as SlideDirector<br/>(Director)
+    participant Slide as Slide Model<br/>(Validación)
+    participant VideoComp as VideoCompositor<br/>(FFmpeg)
+    participant VideoExport as VideoExporter<br/>(Exportación)
+    participant OpenAI as OpenAI/Claude API
+
+    Note over Usuario,VideoExport: Pipeline de generación de contenido educativo diario
+
+    %% 1. Inicialización
+    Usuario->>ContentPipeline: generateDailyContent({topic, date})
+    activate ContentPipeline
+
+    Note over ContentPipeline: Configura tenant,<br/>formato video,<br/>opciones IA
+
+    %% 2. Generación con IA
+    ContentPipeline->>AIService: generateDialogue(topic)
+    activate AIService
+    AIService->>OpenAI: POST /v1/chat/completions<br/>(Prompt: Kobe/Kanye diálogo)
+    activate OpenAI
+    OpenAI-->>AIService: JSON response<br/>{speakers, messages, code}
+    deactivate OpenAI
+
+    AIService->>AIService: validateCodeSyntax()
+    AIService->>AIService: validateEducationalQuality()
+    AIService-->>ContentPipeline: DialogueContent object
+    deactivate AIService
+
+    %% 3. Construcción de Slide
+    ContentPipeline->>DialogueBuilder: new DialogueSlideBuilder()
+    activate DialogueBuilder
+
+    DialogueBuilder->>DialogueBuilder: setTitle(topic)
+    DialogueBuilder->>DialogueBuilder: setContent(dialogueContent)
+    DialogueBuilder->>DialogueBuilder: setLayout('instagram-reels-portrait')
+    DialogueBuilder->>DialogueBuilder: setStyle(instagramStrategy)
+    DialogueBuilder->>DialogueBuilder: setInstagramMetadata(hashtags, category)
+
+    %% 4. Validación con Director
+    ContentPipeline->>Director: buildAdvancedSlide(data, tenantContext)
+    activate Director
+    Director->>DialogueBuilder: getResult()
+    DialogueBuilder->>Slide: validate()
+    activate Slide
+
+    Slide->>Slide: checkTitle()
+    Slide->>Slide: checkContent()
+    Slide->>Slide: checkDuration() < 90s
+    Slide->>Slide: checkAspectRatio() == 4:5
+    Slide->>Slide: customValidation()
+
+    alt Validación exitosa
+        Slide-->>DialogueBuilder: validation.isValid = true
+        DialogueBuilder-->>Director: Slide object
+        Director-->>ContentPipeline: Valid Slide
+        deactivate Slide
+        deactivate DialogueBuilder
+        deactivate Director
+    else Errores de validación
+        Slide-->>DialogueBuilder: validation.errors[]
+        DialogueBuilder-->>ContentPipeline: Throw ValidationError
+        ContentPipeline-->>Usuario: Error: detalles de validación
+    end
+
+    %% 5. Composición de Video
+    ContentPipeline->>VideoComp: compositeSlideOnVideo(slide, backgroundClip)
+    activate VideoComp
+
+    Note over VideoComp: Selecciona clip random<br/>de Minecraft parkour
+
+    VideoComp->>VideoComp: loadBackgroundClip()
+    VideoComp->>VideoComp: renderSlideAsOverlay()
+    VideoComp->>VideoComp: applyAnimations()<br/>(fade-in, typing effect)
+    VideoComp->>VideoComp: mixAudio()<br/>(voiceover + música)
+
+    VideoComp->>FFmpeg: ffmpeg -i background.mp4<br/>-i overlay.png<br/>-filter_complex overlay
+    activate FFmpeg
+    FFmpeg-->>VideoComp: composite.mp4 (temp)
+    deactivate FFmpeg
+
+    VideoComp-->>ContentPipeline: CompositeOperation object
+    deactivate VideoComp
+
+    %% 6. Exportación Final
+    ContentPipeline->>VideoExport: exportVideo(composite, config)
+    activate VideoExport
+
+    Note over VideoExport: Specs Instagram Reels:<br/>1080x1350, H.264,<br/>5000kbps, 30fps
+
+    VideoExport->>FFmpeg: ffmpeg -i composite.mp4<br/>-c:v libx264<br/>-b:v 5000k<br/>-r 30
+    activate FFmpeg
+    FFmpeg-->>VideoExport: final-video.mp4
+    deactivate FFmpeg
+
+    VideoExport->>VideoExport: generateThumbnail()
+    VideoExport->>VideoExport: generateCaption()<br/>(IA hashtags)
+
+    VideoExport-->>ContentPipeline: ExportedVideo object
+    deactivate VideoExport
+
+    %% 7. Resultado final
+    ContentPipeline-->>Usuario: {<br/>  video: 'output/2025-10-23.mp4',<br/>  thumbnail: 'output/2025-10-23.jpg',<br/>  caption: 'Aprende Go! #golang...',<br/>  metadata: {duration: '45s'}<br/>}
+    deactivate ContentPipeline
+
+    Note over Usuario,VideoExport: Video listo para publicar en Instagram Reels

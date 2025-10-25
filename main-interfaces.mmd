@@ -1,0 +1,243 @@
+classDiagram
+    %% API Principal del Motor
+    class SlideEngine {
+        <<interface principal>>
+        +SlideDirector director
+        +generateSlide(slideRequest) Slide
+        +generatePresentation(presentationRequest) Slide[]
+        +registerTenant(tenantId, config) void
+        +getAvailableSlideTypes(tenantId) string[]
+    }
+
+    %% Builder Pattern - Interfaz pública
+    class SlideBuilder {
+        <<abstract builder>>
+        #Slide slide
+        #Array~BuildStep~ buildSteps
+        +reset() SlideBuilder
+        +setTitle(title)* SlideBuilder
+        +setSubtitle(subtitle)* SlideBuilder
+        +setContent(content)* SlideBuilder
+        +setLayout(layout)* SlideBuilder
+        +setStyle(style)* SlideBuilder
+        +setMetadata(metadata) SlideBuilder
+        +setTenantId(tenantId) SlideBuilder
+        +addAsset(type, asset) SlideBuilder
+        +setAnimations(animations) SlideBuilder
+        +validate() boolean
+        +customValidation() void
+        +getResult() Slide
+        +getBuildHistory() Object
+    }
+
+    class TextSlideBuilder {
+        +setTitle(title) TextSlideBuilder
+        +setContent(text) TextSlideBuilder
+        +setLayout(layout) TextSlideBuilder
+        +setStyle(style) TextSlideBuilder
+    }
+
+    class ChartSlideBuilder {
+        +setTitle(title) ChartSlideBuilder
+        +setContent(chartData) ChartSlideBuilder
+        +setLayout(layout) ChartSlideBuilder
+        +setStyle(style) ChartSlideBuilder
+        +setChartOptions(options) ChartSlideBuilder
+    }
+
+    class DialogueSlideBuilder {
+        +setTitle(title) DialogueSlideBuilder
+        +setSubtitle(subtitle) DialogueSlideBuilder
+        +setContent(dialogueContent) DialogueSlideBuilder
+        +setLayout(layout) DialogueSlideBuilder
+        +setStyle(style) DialogueSlideBuilder
+        +addSpeaker(speaker) DialogueSlideBuilder
+        +addMessage(message) DialogueSlideBuilder
+        +setInstagramMetadata(meta) DialogueSlideBuilder
+        +customValidation() void
+        +buildFromDialogue(dialogue, options)$ Slide
+    }
+
+    %% Factory Pattern - Interfaz pública
+    class BuilderFactory {
+        <<static factory>>
+        +createBuilder(slideType, tenantId)$ SlideBuilder
+        +getSupportedTypes(tenantId)$ string[]
+    }
+
+    class StrategyFactory {
+        <<static factory>>
+        +createStyleStrategy(tenantId)$ StyleStrategy
+        +createLayoutStrategy(layoutType, tenantId)$ LayoutStrategy
+    }
+
+    class TenantRegistry {
+        <<static registry>>
+        -Map~string,TenantConfiguration~ tenants
+        +registerTenant(tenantId, config)$ void
+        +getTenant(tenantId)$ TenantConfiguration
+        +getAllTenants()$ string[]
+        +removeTenant(tenantId)$ boolean
+    }
+
+    %% Strategy Pattern - Interfaz pública
+    class StyleStrategy {
+        <<abstract strategy>>
+        +getStyles()* Object
+        +getColorScheme()* Object
+        +getTypography()* Object
+    }
+
+    class CorporateStyleStrategy {
+        +brandColors Object
+        +getStyles() Object
+        +getColorScheme() Object
+        +getTypography() Object
+    }
+
+    class CreativeStyleStrategy {
+        +getStyles() Object
+        +getColorScheme() Object
+        +getTypography() Object
+    }
+
+    class InstagramStyleStrategy {
+        +getStyles() Object
+        +getColorScheme() Object
+        +getTypography() Object
+    }
+
+    %% Director Pattern - Interfaz pública
+    class SlideDirector {
+        <<director>>
+        -SlideBuilder builder
+        +setBuilder(builder) void
+        +buildSimpleSlide(title, content) Slide
+        +buildAdvancedSlide(data, tenantContext) Slide
+        +buildFromTemplate(template, data, context) Slide
+    }
+
+    %% Modelo Core - Interfaz pública
+    class Slide {
+        <<data model>>
+        +string id
+        +string type
+        +string title
+        +string subtitle
+        +Object content
+        +Object layout
+        +Object style
+        +Object metadata
+        +Object assets
+        +Object animations
+        +Object validation
+        +touch() Slide
+        +addValidationError(error) Slide
+        +addValidationWarning(warning) Slide
+        +clearValidation() Slide
+        +clone() Slide
+        +toJSON() Object
+        +fromJSON(data)$ Slide
+    }
+
+    %% Modelos de Diálogo - Interfaz pública
+    class DialogueContent {
+        <<data model>>
+        +string id
+        +string title
+        +Speaker[] speakers
+        +Message[] messages
+        +number duration
+        +Object metadata
+        +addSpeaker(speaker) DialogueContent
+        +getSpeakerById(id) Speaker
+        +getSpeakerByName(name) Speaker
+        +addMessage(message) DialogueContent
+        +sortMessages() DialogueContent
+        +calculateDuration() DialogueContent
+        +getMessagesBySpeaker(speakerId) Message[]
+        +validate() ValidationResult
+        +toJSON() Object
+        +fromJSON(data)$ DialogueContent
+        +createKobeKanyeTemplate(title)$ DialogueContent
+    }
+
+    class Speaker {
+        <<data model>>
+        +string id
+        +string name
+        +string role
+        +Object avatar
+        +Object metadata
+        +validate() ValidationResult
+        +toJSON() Object
+        +fromJSON(data)$ Speaker
+        +createKobeBryant()$ Speaker
+        +createKanyeWest()$ Speaker
+    }
+
+    class Message {
+        <<data model>>
+        +string id
+        +string speakerId
+        +string text
+        +number timestamp
+        +number order
+        +CodeBlock[] codeBlocks
+        +Object metadata
+        +addCodeBlock(code) Message
+        +validate() ValidationResult
+        +toJSON() Object
+        +fromJSON(data)$ Message
+    }
+
+    %% Servicios - Interfaz pública
+    class ContentPipeline {
+        <<service>>
+        +Object config
+        +generateDailyContent(options) Promise~ExportedVideo~
+        +generateBatch(days) Promise~ExportedVideo[]~
+        +previewContent(topic) Promise~Slide~
+    }
+
+    class AIService {
+        <<service>>
+        +Object config
+        +generateDialogue(topic, options) Promise~DialogueContent~
+        +generateCaption(slide) Promise~Caption~
+        +validateCodeSyntax(code, language) Promise~boolean~
+    }
+
+    %% Relaciones
+    SlideEngine --> SlideDirector : usa
+    SlideEngine --> BuilderFactory : usa
+    SlideEngine --> TenantRegistry : usa
+
+    SlideDirector --> SlideBuilder : orquesta
+    BuilderFactory ..> SlideBuilder : crea
+    BuilderFactory --> TenantRegistry : consulta
+
+    SlideBuilder <|-- TextSlideBuilder : extiende
+    SlideBuilder <|-- ChartSlideBuilder : extiende
+    SlideBuilder <|-- DialogueSlideBuilder : extiende
+    SlideBuilder --> Slide : construye
+
+    StrategyFactory ..> StyleStrategy : crea
+    StyleStrategy <|-- CorporateStyleStrategy : implementa
+    StyleStrategy <|-- CreativeStyleStrategy : implementa
+    StyleStrategy <|-- InstagramStyleStrategy : implementa
+
+    DialogueSlideBuilder --> DialogueContent : usa
+    DialogueContent --> Speaker : contiene
+    DialogueContent --> Message : contiene
+
+    ContentPipeline --> AIService : usa
+    ContentPipeline --> DialogueSlideBuilder : usa
+    AIService --> DialogueContent : genera
+
+    %% Estilos
+    style SlideEngine fill:#FF3E00,stroke:#333,stroke-width:3px,color:#fff
+    style SlideBuilder fill:#38B2AC,stroke:#333,stroke-width:2px,color:#fff
+    style StyleStrategy fill:#667eea,stroke:#333,stroke-width:2px,color:#fff
+    style Slide fill:#4CAF50,stroke:#333,stroke-width:2px,color:#fff
+    style ContentPipeline fill:#FF6B6B,stroke:#333,stroke-width:2px,color:#fff

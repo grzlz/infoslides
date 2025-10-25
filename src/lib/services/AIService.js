@@ -158,7 +158,12 @@ Generate the dialogue now. Return ONLY valid JSON, no other text.`;
 	 * @private
 	 */
 	buildDialogueContent(topic, dialogueData, kobe, kanye) {
-		const dialogue = DialogueContent.createKobeKanyeTemplate(topic.title);
+		const dialogue = new DialogueContent();
+		dialogue.title = topic.title;
+
+		// Use the speakers we already created (with correct IDs)
+		dialogue.addSpeaker(kobe);
+		dialogue.addSpeaker(kanye);
 
 		let currentTimestamp = 0;
 		const readingSpeed = 50; // ms per character

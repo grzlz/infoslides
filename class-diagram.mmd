@@ -1,0 +1,379 @@
+classDiagram
+    %% ========================================
+    %% BUILDER PATTERN - Construcción de Slides
+    %% ========================================
+
+    class SlideBuilder {
+        <<abstract>>
+        #Slide slide
+        #BuildStep[] buildSteps
+        +reset() SlideBuilder
+        +setTitle(title)* SlideBuilder
+        +setSubtitle(subtitle)* SlideBuilder
+        +setContent(content)* SlideBuilder
+        +setLayout(layout)* SlideBuilder
+        +setStyle(style)* SlideBuilder
+        +setMetadata(metadata) SlideBuilder
+        +setTenantId(tenantId) SlideBuilder
+        +addAsset(type, asset) SlideBuilder
+        +setAnimations(animations) SlideBuilder
+        +validate() boolean
+        +customValidation() void
+        +getResult() Slide
+        +getBuildHistory() Object
+        #addBuildStep(step, data) SlideBuilder
+    }
+
+    class TextSlideBuilder {
+        +setTitle(title) TextSlideBuilder
+        +setContent(content) TextSlideBuilder
+        +setLayout(layout) TextSlideBuilder
+        +setStyle(style) TextSlideBuilder
+    }
+
+    class ChartSlideBuilder {
+        +setTitle(title) ChartSlideBuilder
+        +setContent(content) ChartSlideBuilder
+        +setLayout(layout) ChartSlideBuilder
+        +setStyle(style) ChartSlideBuilder
+        +setChartOptions(options) ChartSlideBuilder
+    }
+
+    class DialogueSlideBuilder {
+        +setTitle(title) DialogueSlideBuilder
+        +setSubtitle(subtitle) DialogueSlideBuilder
+        +setContent(dialogueContent) DialogueSlideBuilder
+        +setLayout(layout) DialogueSlideBuilder
+        +setStyle(style) DialogueSlideBuilder
+        +addSpeaker(speaker) DialogueSlideBuilder
+        +addMessage(message) DialogueSlideBuilder
+        +setInstagramMetadata(meta) DialogueSlideBuilder
+        +customValidation() void
+        +buildFromDialogue(dialogue, options)$ Slide
+    }
+
+    %% ========================================
+    %% STRATEGY PATTERN - Comportamientos Intercambiables
+    %% ========================================
+
+    class StyleStrategy {
+        <<abstract>>
+        +getStyles()* Object
+        +getColorScheme()* Object
+        +getTypography()* Object
+    }
+
+    class CorporateStyleStrategy {
+        -Object brandColors
+        +CorporateStyleStrategy(brandColors)
+        +getStyles() Object
+        +getColorScheme() Object
+        +getTypography() Object
+    }
+
+    class CreativeStyleStrategy {
+        +getStyles() Object
+        +getColorScheme() Object
+        +getTypography() Object
+    }
+
+    class InstagramStyleStrategy {
+        +getStyles() Object
+        +getColorScheme() Object
+        +getTypography() Object
+    }
+
+    class LayoutStrategy {
+        <<abstract>>
+        +getLayout()* Object
+        +getZones()* Object
+        +applyToSlide(slide)* void
+    }
+
+    %% ========================================
+    %% FACTORY PATTERN - Creación de Objetos
+    %% ========================================
+
+    class BuilderFactory {
+        <<static>>
+        +createBuilder(slideType, tenantId)$ SlideBuilder
+        +getSupportedTypes(tenantId)$ string[]
+    }
+
+    class StrategyFactory {
+        <<static>>
+        +createStyleStrategy(tenantId)$ StyleStrategy
+        +createLayoutStrategy(layoutType, tenantId)$ LayoutStrategy
+    }
+
+    class TenantRegistry {
+        <<static>>
+        -Map~string,TenantConfiguration~ tenants
+        +registerTenant(tenantId, config)$ void
+        +getTenant(tenantId)$ TenantConfiguration
+        +getAllTenants()$ string[]
+        +removeTenant(tenantId)$ boolean
+    }
+
+    class TenantConfiguration {
+        +string tenantId
+        +string name
+        +string styleType
+        +Object brandColors
+        +Object customBuilders
+        +Object layoutPreferences
+        +ValidationRule[] validationRules
+        +boolean requiresWatermark
+        +string watermark
+        +StyleStrategy customStyleStrategy
+        +Object customStyleConfig
+        +hasCustomBuilder(slideType) boolean
+        +getCustomBuilder(slideType) SlideBuilder
+        +getCustomBuilderTypes() string[]
+    }
+
+    %% ========================================
+    %% DIRECTOR PATTERN - Orquestación
+    %% ========================================
+
+    class SlideDirector {
+        -SlideBuilder builder
+        +setBuilder(builder) void
+        +buildSimpleSlide(title, content) Slide
+        +buildAdvancedSlide(data, tenantContext) Slide
+        +buildFromTemplate(template, data, context) Slide
+    }
+
+    %% ========================================
+    %% MODELOS DE DATOS
+    %% ========================================
+
+    class Slide {
+        +string id
+        +string type
+        +string title
+        +string subtitle
+        +Object content
+        +Object layout
+        +Object style
+        +Object metadata
+        +Object assets
+        +Object animations
+        +Validation validation
+        -generateId() string
+        +touch() Slide
+        +addValidationError(error) Slide
+        +addValidationWarning(warning) Slide
+        +clearValidation() Slide
+        +clone() Slide
+        +toJSON() Object
+        +fromJSON(data)$ Slide
+    }
+
+    class Validation {
+        +boolean isValid
+        +ValidationError[] errors
+        +ValidationWarning[] warnings
+    }
+
+    class DialogueContent {
+        +string id
+        +string title
+        +Speaker[] speakers
+        +Message[] messages
+        +number duration
+        +Object metadata
+        -generateId() string
+        +touch() DialogueContent
+        +updateCounts() DialogueContent
+        +addSpeaker(speaker) DialogueContent
+        +getSpeakerById(id) Speaker
+        +getSpeakerByName(name) Speaker
+        +addMessage(message) DialogueContent
+        +sortMessages() DialogueContent
+        +calculateDuration() DialogueContent
+        +getMessagesBySpeaker(speakerId) Message[]
+        +clearMessages() DialogueContent
+        +clearSpeakers() DialogueContent
+        +validate() ValidationResult
+        +clone() DialogueContent
+        +toJSON() Object
+        +fromJSON(data)$ DialogueContent
+        +createKobeKanyeTemplate(title)$ DialogueContent
+    }
+
+    class Speaker {
+        +string id
+        +string name
+        +string role
+        +Object avatar
+        +Object metadata
+        -generateId() string
+        +validate() ValidationResult
+        +clone() Speaker
+        +toJSON() Object
+        +fromJSON(data)$ Speaker
+        +createKobeBryant()$ Speaker
+        +createKanyeWest()$ Speaker
+    }
+
+    class Message {
+        +string id
+        +string speakerId
+        +string text
+        +number timestamp
+        +number order
+        +CodeBlock[] codeBlocks
+        +Object metadata
+        -generateId() string
+        +addCodeBlock(code) Message
+        +validate() ValidationResult
+        +clone() Message
+        +toJSON() Object
+        +fromJSON(data)$ Message
+    }
+
+    class CodeBlock {
+        +string id
+        +string language
+        +string code
+        +boolean highlighted
+        +Object metadata
+        -generateId() string
+        +highlight() CodeBlock
+        +validate() ValidationResult
+        +toJSON() Object
+        +fromJSON(data)$ CodeBlock
+    }
+
+    %% ========================================
+    %% MOTOR PRINCIPAL
+    %% ========================================
+
+    class SlideEngine {
+        -SlideDirector director
+        +generateSlide(slideRequest) Slide
+        +generatePresentation(presentationRequest) Slide[]
+        +registerTenant(tenantId, config) void
+        +getAvailableSlideTypes(tenantId) string[]
+    }
+
+    %% ========================================
+    %% SERVICIOS
+    %% ========================================
+
+    class ContentPipeline {
+        +Object config
+        +generateDailyContent(options) Promise~ExportedVideo~
+        +generateBatch(days) Promise~ExportedVideo[]~
+        +previewContent(topic) Promise~Slide~
+    }
+
+    class AIService {
+        +Object config
+        +string apiKey
+        +string provider
+        +generateDialogue(topic, options) Promise~DialogueContent~
+        +generateCaption(slide) Promise~Caption~
+        +validateCodeSyntax(code, language) Promise~boolean~
+        -callOpenAI(prompt) Promise~Object~
+        -callClaude(prompt) Promise~Object~
+    }
+
+    class VideoCompositor {
+        +Object config
+        +composeSlideOnVideo(slide, background) Promise~CompositeOperation~
+        +applyAnimations(operations) Promise~void~
+        +mixAudio(voiceover, music) Promise~void~
+        -selectBackgroundClip() VideoClip
+        -renderOverlay(slide) Promise~Image~
+    }
+
+    class VideoExporter {
+        +Object config
+        +exportVideo(composite, config) Promise~ExportedVideo~
+        +generateThumbnail(video) Promise~Image~
+        +validateOutput(video) boolean
+        -encodeWithFFmpeg(input, output, config) Promise~void~
+    }
+
+    %% ========================================
+    %% RELACIONES - BUILDER PATTERN
+    %% ========================================
+
+    SlideBuilder <|-- TextSlideBuilder : extiende
+    SlideBuilder <|-- ChartSlideBuilder : extiende
+    SlideBuilder <|-- DialogueSlideBuilder : extiende
+    SlideBuilder --> Slide : construye
+    SlideDirector --> SlideBuilder : orquesta
+
+    %% ========================================
+    %% RELACIONES - STRATEGY PATTERN
+    %% ========================================
+
+    StyleStrategy <|-- CorporateStyleStrategy : implementa
+    StyleStrategy <|-- CreativeStyleStrategy : implementa
+    StyleStrategy <|-- InstagramStyleStrategy : implementa
+
+    %% ========================================
+    %% RELACIONES - FACTORY PATTERN
+    %% ========================================
+
+    BuilderFactory ..> SlideBuilder : crea
+    BuilderFactory --> TenantRegistry : consulta
+    StrategyFactory ..> StyleStrategy : crea
+    StrategyFactory ..> LayoutStrategy : crea
+    StrategyFactory --> TenantRegistry : consulta
+    TenantRegistry --> TenantConfiguration : gestiona
+
+    %% ========================================
+    %% RELACIONES - MOTOR Y SERVICIOS
+    %% ========================================
+
+    SlideEngine --> SlideDirector : usa
+    SlideEngine --> BuilderFactory : usa
+    SlideEngine --> StrategyFactory : usa
+    SlideEngine --> TenantRegistry : usa
+
+    ContentPipeline --> AIService : usa
+    ContentPipeline --> SlideEngine : usa
+    ContentPipeline --> VideoCompositor : usa
+    ContentPipeline --> VideoExporter : usa
+
+    %% ========================================
+    %% RELACIONES - MODELOS
+    %% ========================================
+
+    Slide --> Validation : contiene
+    DialogueSlideBuilder --> DialogueContent : usa
+    DialogueContent --> Speaker : contiene
+    DialogueContent --> Message : contiene
+    Message --> CodeBlock : contiene
+    AIService --> DialogueContent : genera
+
+    %% ========================================
+    %% ESTILOS
+    %% ========================================
+
+    style SlideEngine fill:#FF3E00,stroke:#333,stroke-width:3px,color:#fff
+    style SlideDirector fill:#FF6B35,stroke:#333,stroke-width:2px,color:#fff
+
+    style BuilderFactory fill:#F7DF1E,stroke:#333,stroke-width:2px
+    style StrategyFactory fill:#F7DF1E,stroke:#333,stroke-width:2px
+    style TenantRegistry fill:#F7DF1E,stroke:#333,stroke-width:2px
+
+    style SlideBuilder fill:#38B2AC,stroke:#333,stroke-width:2px,color:#fff
+    style TextSlideBuilder fill:#38B2AC,stroke:#333,stroke-width:1px,color:#fff
+    style ChartSlideBuilder fill:#38B2AC,stroke:#333,stroke-width:1px,color:#fff
+    style DialogueSlideBuilder fill:#38B2AC,stroke:#333,stroke-width:1px,color:#fff
+
+    style StyleStrategy fill:#667eea,stroke:#333,stroke-width:2px,color:#fff
+    style CorporateStyleStrategy fill:#667eea,stroke:#333,stroke-width:1px,color:#fff
+    style CreativeStyleStrategy fill:#667eea,stroke:#333,stroke-width:1px,color:#fff
+    style InstagramStyleStrategy fill:#667eea,stroke:#333,stroke-width:1px,color:#fff
+
+    style Slide fill:#4CAF50,stroke:#333,stroke-width:2px,color:#fff
+    style DialogueContent fill:#4CAF50,stroke:#333,stroke-width:2px,color:#fff
+
+    style ContentPipeline fill:#FF6B6B,stroke:#333,stroke-width:2px,color:#fff
+    style AIService fill:#FF6B6B,stroke:#333,stroke-width:2px,color:#fff

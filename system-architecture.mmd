@@ -1,0 +1,112 @@
+graph TB
+    subgraph "Capa de Cliente"
+        UI[Interface de Usuario SvelteKit]
+        CLI[CLI Scripts]
+    end
+
+    subgraph "Motor Principal - SlideEngine"
+        Engine[SlideEngine<br/>Punto de entrada principal]
+        Director[SlideDirector<br/>Orquesta construcción]
+    end
+
+    subgraph "Factories - Creación de Objetos"
+        BuilderFactory[BuilderFactory<br/>Crea builders apropiados]
+        StrategyFactory[StrategyFactory<br/>Crea estrategias]
+        TenantRegistry[TenantRegistry<br/>Gestiona configuraciones]
+    end
+
+    subgraph "Builders - Construcción de Slides"
+        TextBuilder[TextSlideBuilder<br/>Slides de texto]
+        ChartBuilder[ChartSlideBuilder<br/>Slides de gráficas]
+        DialogueBuilder[DialogueSlideBuilder<br/>Slides de diálogo]
+        CustomBuilder[CustomBuilders<br/>Personalizados por tenant]
+    end
+
+    subgraph "Strategies - Comportamientos Intercambiables"
+        CorporateStyle[CorporateStyleStrategy<br/>Estilo corporativo]
+        CreativeStyle[CreativeStyleStrategy<br/>Estilo creativo]
+        InstagramStyle[InstagramStyleStrategy<br/>Estilo Instagram Reels]
+        LayoutStrat[LayoutStrategy<br/>Layouts configurables]
+    end
+
+    subgraph "Modelos de Datos"
+        Slide[Slide<br/>Modelo core con validación]
+        DialogueContent[DialogueContent<br/>Conversaciones completas]
+        Speaker[Speaker<br/>Información de speakers]
+        Message[Message<br/>Mensajes individuales]
+        InstagramMeta[InstagramMetadata<br/>Metadatos sociales]
+    end
+
+    subgraph "Servicios - Procesamiento"
+        AIService[AIService<br/>Generación con IA]
+        ContentPipeline[ContentPipeline<br/>Pipeline completo]
+        VideoCompositor[VideoCompositor<br/>Composición de video]
+        VideoExporter[VideoExporter<br/>Exportación MP4]
+    end
+
+    subgraph "Dependencias Externas"
+        OpenAI[OpenAI GPT API]
+        Claude[Anthropic Claude API]
+        FFmpeg[FFmpeg<br/>Video processing]
+        Tailwind[Tailwind CSS v4]
+    end
+
+    %% Flujo principal
+    UI --> Engine
+    CLI --> Engine
+    Engine --> Director
+    Director --> BuilderFactory
+    Director --> StrategyFactory
+
+    %% Factory connections
+    BuilderFactory --> TenantRegistry
+    StrategyFactory --> TenantRegistry
+    BuilderFactory --> TextBuilder
+    BuilderFactory --> ChartBuilder
+    BuilderFactory --> DialogueBuilder
+    BuilderFactory --> CustomBuilder
+
+    StrategyFactory --> CorporateStyle
+    StrategyFactory --> CreativeStyle
+    StrategyFactory --> InstagramStyle
+    StrategyFactory --> LayoutStrat
+
+    %% Builder to Model connections
+    TextBuilder --> Slide
+    ChartBuilder --> Slide
+    DialogueBuilder --> Slide
+    DialogueBuilder --> DialogueContent
+    DialogueContent --> Speaker
+    DialogueContent --> Message
+    Slide --> InstagramMeta
+
+    %% Service connections
+    Engine --> ContentPipeline
+    ContentPipeline --> AIService
+    ContentPipeline --> VideoCompositor
+    ContentPipeline --> VideoExporter
+
+    AIService --> OpenAI
+    AIService --> Claude
+    VideoCompositor --> FFmpeg
+    VideoExporter --> FFmpeg
+
+    %% Styling
+    UI --> Tailwind
+
+    %% Estilos visuales
+    classDef engineClass fill:#FF3E00,stroke:#333,stroke-width:2px,color:#fff
+    classDef factoryClass fill:#F7DF1E,stroke:#333,stroke-width:2px
+    classDef builderClass fill:#38B2AC,stroke:#333,stroke-width:2px,color:#fff
+    classDef strategyClass fill:#667eea,stroke:#333,stroke-width:2px,color:#fff
+    classDef modelClass fill:#4CAF50,stroke:#333,stroke-width:2px,color:#fff
+    classDef serviceClass fill:#FF6B6B,stroke:#333,stroke-width:2px,color:#fff
+    classDef externalClass fill:#9E9E9E,stroke:#333,stroke-width:2px,color:#fff
+
+    class Engine,Director engineClass
+    class BuilderFactory,StrategyFactory,TenantRegistry factoryClass
+    class TextBuilder,ChartBuilder,DialogueBuilder,CustomBuilder builderClass
+    class CorporateStyle,CreativeStyle,InstagramStyle,LayoutStrat strategyClass
+    class Slide,DialogueContent,Speaker,Message,InstagramMeta modelClass
+    class AIService,ContentPipeline,VideoCompositor,VideoExporter serviceClass
+    class OpenAI,Claude,FFmpeg,Tailwind externalClass
