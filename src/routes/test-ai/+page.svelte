@@ -1,5 +1,6 @@
 <script>
 	import { onMount } from 'svelte';
+	import DialogueBubble from '$lib/components/DialogueBubble.svelte';
 
 	let topics = $state([]);
 	let selectedTopic = $state(null);
@@ -8,6 +9,7 @@
 	let loading = $state(false);
 	let result = $state(null);
 	let error = $state(null);
+	let showGlassPreview = $state(true);
 
 	onMount(async () => {
 		// Load sample topics
@@ -160,26 +162,59 @@
 						</div>
 					{/if}
 
-					<div class="dialogue">
-						{#each result.dialogue.messages as message, index}
-							{@const speaker = result.dialogue.speakers.find((s) => s.id === message.speakerId)}
-							<div class="message" class:interruption={message.isInterruption}>
-								<div class="message-header">
-									<span class="speaker" style={getSpeakerStyle(speaker?.name)}>
-										{speaker?.name || 'Unknown'}
-									</span>
-									<span class="timestamp">{formatDuration(message.timestamp)}</span>
-									{#if message.isInterruption}
-										<span class="badge">🔥 INTERRUPTION</span>
+					<div class="view-toggle">
+						<button
+							class="toggle-btn"
+							class:active={showGlassPreview}
+							onclick={() => (showGlassPreview = true)}
+						>
+							✨ Glass Mode
+						</button>
+						<button
+							class="toggle-btn"
+							class:active={!showGlassPreview}
+							onclick={() => (showGlassPreview = false)}
+						>
+							📄 Classic View
+						</button>
+					</div>
+
+					{#if showGlassPreview}
+						<div class="dialogue glass-mode">
+							{#each result.dialogue.messages as message}
+								{@const speaker = result.dialogue.speakers.find((s) => s.id === message.speakerId)}
+								<DialogueBubble
+									{speaker}
+									message={message.text}
+									isInterruption={message.isInterruption}
+									timestamp={message.timestamp}
+									codeBlock={message.codeBlock}
+									animated={true}
+								/>
+							{/each}
+						</div>
+					{:else}
+						<div class="dialogue classic-mode">
+							{#each result.dialogue.messages as message}
+								{@const speaker = result.dialogue.speakers.find((s) => s.id === message.speakerId)}
+								<div class="message" class:interruption={message.isInterruption}>
+									<div class="message-header">
+										<span class="speaker" style={getSpeakerStyle(speaker?.name)}>
+											{speaker?.name || 'Unknown'}
+										</span>
+										<span class="timestamp">{formatDuration(message.timestamp)}</span>
+										{#if message.isInterruption}
+											<span class="badge">🔥 INTERRUPTION</span>
+										{/if}
+									</div>
+									<div class="message-text">{message.text}</div>
+									{#if message.codeBlock}
+										<pre class="code-block"><code>{message.codeBlock.code}</code></pre>
 									{/if}
 								</div>
-								<div class="message-text">{message.text}</div>
-								{#if message.codeBlock}
-									<pre class="code-block"><code>{message.codeBlock.code}</code></pre>
-								{/if}
-							</div>
-						{/each}
-					</div>
+							{/each}
+						</div>
+					{/if}
 
 					<details class="raw-data">
 						<summary>View Raw JSON</summary>
@@ -356,9 +391,67 @@
 		margin: 0.5rem 0 0 1.5rem;
 	}
 
+	.view-toggle {
+		display: flex;
+		gap: 0.5rem;
+		margin-bottom: 1.5rem;
+		padding: 0.5rem;
+		background: rgba(255, 255, 255, 0.5);
+		border-radius: 8px;
+		backdrop-filter: blur(10px);
+	}
+
+	.toggle-btn {
+		flex: 1;
+		padding: 0.75rem 1rem;
+		background: rgba(255, 255, 255, 0.3);
+		border: 2px solid rgba(85, 37, 131, 0.2);
+		border-radius: 6px;
+		cursor: pointer;
+		font-weight: 600;
+		transition: all 0.3s ease;
+		backdrop-filter: blur(5px);
+	}
+
+	.toggle-btn:hover {
+		background: rgba(255, 255, 255, 0.5);
+		border-color: rgba(85, 37, 131, 0.5);
+	}
+
+	.toggle-btn.active {
+		background: linear-gradient(135deg, #552583, #fdb927);
+		color: white;
+		border-color: #552583;
+		box-shadow: 0 4px 12px rgba(85, 37, 131, 0.3);
+	}
+
 	.dialogue {
 		display: flex;
 		flex-direction: column;
+		gap: 1rem;
+	}
+
+	.dialogue.glass-mode {
+		padding: 2rem;
+		background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+		border-radius: 12px;
+		position: relative;
+		overflow: hidden;
+	}
+
+	.dialogue.glass-mode::before {
+		content: '';
+		position: absolute;
+		top: 0;
+		left: 0;
+		right: 0;
+		bottom: 0;
+		background: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><defs><pattern id="grid" width="10" height="10" patternUnits="userSpaceOnUse"><path d="M 10 0 L 0 0 0 10" fill="none" stroke="white" stroke-width="0.5" opacity="0.1"/></pattern></defs><rect width="100" height="100" fill="url(%23grid)"/></svg>');
+		opacity: 0.5;
+		pointer-events: none;
+	}
+
+	.dialogue.classic-mode {
 		gap: 1rem;
 	}
 
